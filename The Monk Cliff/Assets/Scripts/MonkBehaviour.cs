@@ -1,35 +1,121 @@
-﻿using System.Collections;
-using System.Collections.Generic;
-using UnityEngine;
+﻿using UnityEngine;
 
 public class MonkBehaviour : MonoBehaviour
 {
-    public Transform MasterMonk;
-    public Transform MonkHouse1;
+    // Reference to the Rigidbody2D component
+    private Rigidbody2D rigidBody;
 
-    public bool MasterMonkOrno;
+    // Reference to the ResourceManager script
+    public ResourceManager resourceManager;
+    public float resourceGainInterval = 5.0f;
+    private float nextResourceGainTime;
+    private bool isWorking = false;
 
-    public float speed = 1.5f;
-    private Vector3 target;
-
-    private Vector3 monkv;
-    private Vector3 monkhv;
-    void Start()
+    // Enum to track the state of the monk
+    public enum MonkState
     {
-        monkv = MasterMonk.position;
-        monkhv = MonkHouse1.position;
-        target = transform.position;
+        None,
+        CollectingFood,
+        CuttingWood,
+        Meditating,
+        CollectingWater
+    }
+    public MonkState currentState = MonkState.None;
+
+    // Destination transform for the monk to move towards
+    private Transform destination;
+
+    // Speed of the monk's movement
+    public float speed = 2f;
+
+    public void Start()
+    {
+        // Get reference to the Rigidbody2D component
+        rigidBody = GetComponent<Rigidbody2D>();
+        nextResourceGainTime = Time.time + resourceGainInterval;
+
     }
 
-    // Update is called once per frame
-    void Update()
+    private void Update()
     {
-        if (MasterMonkOrno)
-            target = monkv;
-        else
-            target = monkhv;
+        switch (currentState)
+        {
+            case MonkState.None:
+                // Do nothing
+                break;
+            case MonkState.CollectingFood:
+                destination = resourceManager.VegetablesPatch;
+                MoveTowardsDestination();
+                // Call the resource manager to add food every x seconds
+                break;
+            case MonkState.CuttingWood:
+                destination = resourceManager.Forest;
+                MoveTowardsDestination();
+                break;
+            case MonkState.Meditating:
+                destination = resourceManager.MeditationArea;
+                MoveTowardsDestination();
+                break;
+            case MonkState.CollectingWater:
+                destination = resourceManager.River;
+                MoveTowardsDestination();
+                break;
+        }
 
-        target.z = transform.position.z;
-        transform.position = Vector3.MoveTowards(transform.position, target, speed * Time.deltaTime);
+        if (Time.time >= nextResourceGainTime)
+        {
+            if (isWorking)
+            {
+                switch (currentState)
+                {
+                    case MonkState.None:
+                        break;
+                    case MonkState.CollectingFood:
+                        resourceManager.AddFood(1);
+                        break;
+                    case MonkState.CuttingWood:
+                        // Call the resource manager to add wood every x seconds
+                        resourceManager.AddWood(1);
+                        break;
+                    case MonkState.Meditating:
+                        resourceManager.AddExperience(1);
+                        break;
+                    case MonkState.CollectingWater:
+                        resourceManager.AddWater(1);
+                        break;
+                }
+                nextResourceGainTime = Time.time + resourceGainInterval;
+            }
+        }
+    }
+
+    private void MoveTowardsDestination()
+    {
+        float distance = Vector2.Distance(transform.position, destination.position);
+        if (distance > .5f)
+        {
+            isWorking = false;
+            // Calculate the direction to move in
+            Vector2 direction = (destination.position - transform.position).normalized;
+            rigidBody.velocity = direction * speed;
+        }
+        else
+        {
+            isWorking = true;
+            if (rigidBody.velocity.x + rigidBody.velocity.y > 2f)
+            {
+                rigidBody.velocity -= rigidBody.velocity * .1f;
+            }
+            else
+            {
+                rigidBody.velocity = new Vector2(0, 0);
+            }         
+        }
+    }
+
+    public void SetState(MonkState newState, Transform newDestination)
+    {
+        currentState = newState;
+        destination = newDestination;
     }
 }
