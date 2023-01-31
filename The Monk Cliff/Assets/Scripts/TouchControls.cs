@@ -18,6 +18,7 @@ public class TouchControls : MonoBehaviour
             // Check if the touch event was a tap
             if (touch.phase == TouchPhase.Began)
             {
+                Debug.Log("hit");
                 // Raycast to determine if the touch event was on a GameObject
                 Ray ray = Camera.main.ScreenPointToRay(touch.position);
                 RaycastHit2D hit = Physics2D.Raycast(ray.origin, ray.direction);
@@ -30,6 +31,7 @@ public class TouchControls : MonoBehaviour
                     if (hitObject.tag == "Monk")
                     {
                         selectedMonk = hitObject;
+                        Debug.Log("monk");
                     }
                     // Check if the touch event was on a Workplace object
                     else if (hitObject.tag == "Veg")
