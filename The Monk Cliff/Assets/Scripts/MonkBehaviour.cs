@@ -1,5 +1,14 @@
 ﻿using UnityEngine;
 
+public enum MonkState
+{
+    None,
+    CollectingFood,
+    CuttingWood,
+    Meditating,
+    CollectingWater
+}
+
 public class MonkBehaviour : MonoBehaviour
 {
     // Reference to the Rigidbody2D component
@@ -12,14 +21,7 @@ public class MonkBehaviour : MonoBehaviour
     private bool isWorking = false;
 
     // Enum to track the state of the monk
-    public enum MonkState
-    {
-        None,
-        CollectingFood,
-        CuttingWood,
-        Meditating,
-        CollectingWater
-    }
+
     public MonkState currentState = MonkState.None;
 
     // Destination transform for the monk to move towards
